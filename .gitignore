@@ -1,0 +1,8 @@
+# Собирается через make-installer.sh, в репозитории не нужен:
+# это base64 остальных файлов, каждый пересбор давал бы огромный диф.
+# Для раздачи — прикладывать к GitHub Release.
+jiggle-installer.sh
+
+.DS_Store
+*.iconset/
+*.icns
