@@ -5,15 +5,10 @@ system never reports you as idle.
 
 Two independent ways to run it, sharing nothing but the idea:
 
-- **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly. The
-  only dependency is Xcode Command Line Tools.
+- **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly. Ships
+  prebuilt in a dmg, or builds with nothing but Xcode Command Line Tools.
 - **`jiggle.sh`** — a shell script driving [`cliclick`](https://github.com/BlueM/cliclick).
   Nothing to build.
-
-Neither arrives quarantined: the app compiles on your machine, the script is
-just a script. For people who will not touch the code there is also a prebuilt,
-signed `.app` in a dmg (see Install) — one Gatekeeper step on first launch,
-nothing after.
 
 ## Why another one
 
@@ -61,9 +56,9 @@ all).
 
 ### Download the dmg
 
-The friendliest way if you are not going to change the code. Grab
-`Jiggle-<version>.dmg` from [Releases](https://github.com/gorokhovdenis/jiggle/releases),
-open it, drag Jiggle into Applications.
+Grab `Jiggle-<version>.dmg` from
+[Releases](https://github.com/gorokhovdenis/jiggle/releases), open it, drag
+Jiggle into Applications.
 
 Because the dmg is not notarized (that costs $99/year), the first launch is
 blocked by Gatekeeper. Once: right-click Jiggle in Applications and choose
@@ -73,8 +68,7 @@ blocked by Gatekeeper. Once: right-click Jiggle in Applications and choose
 xattr -dr com.apple.quarantine /Applications/Jiggle.app
 ```
 
-After that it launches normally and, since it is signed with a stable
-certificate, the Accessibility grant survives updates. No Xcode needed.
+After that it launches normally. No Xcode needed.
 
 Build the dmg yourself from a checkout with `./make-dmg.sh` (after
 `make-cert.sh` and `build-app.sh`).
@@ -154,12 +148,10 @@ trusted only on the machine that made it, so on any Mac but the build machine
 the downloaded app is rejected exactly as an ad-hoc one would be — hence the
 one-time quarantine step for the dmg. Notarization is the only way to remove it.
 
-**TCC** — the Accessibility grant — does *not* check trust. It stores the app's
-designated requirement and re-checks the binary against it. For a
-certificate-signed app that requirement is `identifier + certificate root`, so
-every update signed with the **same** certificate keeps the grant, even though
-that certificate is untrusted on this machine. An ad-hoc app pins the requirement
-to the binary's `cdhash`, so every update loses the grant.
+**TCC** — the Accessibility grant — does *not* check trust. It only re-checks
+the binary against the stored designated requirement described above, so every
+update signed with the **same** certificate keeps the grant, even though that
+certificate is untrusted on the target machine.
 
 That is why the dmg ships an app signed with one stable certificate rather than
 ad-hoc: the first launch costs a quarantine click regardless, but updates then
@@ -188,8 +180,7 @@ The icon lives in the menu bar; no Dock icon, no window.
 The icon carries the state: a plain cursor when stopped, a cursor with motion
 lines when running, a warning triangle when events are going nowhere. Every move
 is confirmed by reading the cursor position afterwards, so "running" cannot
-quietly mean "nothing is happening" — the reason that failure mode is worth
-guarding against is that it looks exactly like success.
+quietly mean "nothing is happening".
 
 Log: `~/Library/Logs/jiggle.log`.
 
@@ -241,20 +232,6 @@ Worth being straight about:
   state, granted once per Mac, by hand.
 - **`cliclick` is not bundled.** Homebrew installs the right build on the target
   machine.
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `app/main.swift` | menu bar app: icon, menu, permissions |
-| `app/Jiggler.swift` | the core: schedule, glide, move verification |
-| `app/Log.swift` | `~/Library/Logs/jiggle.log` |
-| `jiggle.sh` | the shell version, standalone |
-| `make-cert.sh` | local signing certificate, once per machine |
-| `build-app.sh` | builds `~/Applications/Jiggle.app`, icon and signature included |
-| `make-installer.sh` | packs everything into a single self-extracting installer |
-| `make-dmg.sh` | packs the built app into a dmg for GitHub Releases |
-| `jiggle-icon.png` | app icon source |
 
 ## Uninstall
 
