@@ -1,10 +1,9 @@
 #!/bin/bash
 # Собирает самораспаковывающийся установщик jiggle-installer.sh — один файл,
-# внутри которого лежат все исходники джигглера в виде base64.
+# внутри которого лежат все исходники в виде base64.
 #
-# Запускать после любой правки jiggle.sh / jiggle-launcher.applescript / иконки.
-# Результат: jiggle-installer.sh рядом со скриптом — его и везём на новый ноут
-# либо прикладываем к GitHub Release. В git он не коммитится (см. .gitignore).
+# Запускать после правки исходников. Результат — jiggle-installer.sh рядом со
+# скриптом; в git он не коммитится (см. .gitignore), место ему в GitHub Release.
 #
 # Путь для результата можно задать первым аргументом.
 
@@ -15,10 +14,10 @@ OUT="${1:-$SRC/jiggle-installer.sh}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-FILES="jiggle.sh jiggle-launcher.applescript jiggle-icon.png build-jiggle-app.sh"
+FILES="jiggle.sh build-app.sh make-cert.sh jiggle-icon.png app"
 
 for f in $FILES; do
-    [ -f "$SRC/$f" ] || { echo "нет файла: $SRC/$f" >&2; exit 1; }
+    [ -e "$SRC/$f" ] || { echo "нет: $SRC/$f" >&2; exit 1; }
 done
 
 # base64 вместо сырого tar: файл остаётся текстовым и переживает пересылку
@@ -34,9 +33,8 @@ cat > "$OUT" <<'INSTALLER_HEADER'
 #   bash jiggle-installer.sh
 #
 # Переменные (задать, чтобы не спрашивал):
-#   JIGGLE_DEST=путь      готовый путь для исходников, вопрос не задаётся
-#   JIGGLE_BASE=путь      папка, внутри которой создать jiggle/
-#   JIGGLE_SKIP_DOCK=1    не трогать Dock
+#   JIGGLE_DEST=путь    готовый путь для исходников, вопрос не задаётся
+#   JIGGLE_BASE=путь    папка, внутри которой создать jiggle/
 
 set -eu
 
@@ -70,10 +68,7 @@ else
 fi
 
 PARENT="$(dirname "$DEST")"
-if [ ! -d "$PARENT" ]; then
-    echo "Папки $PARENT не существует." >&2
-    exit 1
-fi
+[ -d "$PARENT" ] || { echo "Папки $PARENT не существует." >&2; exit 1; }
 
 # --- Распаковка ---------------------------------------------------------------
 LINE=$(awk '/^__PAYLOAD_BELOW__$/ { print NR + 1; exit 0 }' "$0")
@@ -82,56 +77,52 @@ LINE=$(awk '/^__PAYLOAD_BELOW__$/ { print NR + 1; exit 0 }' "$0")
 mkdir -p "$DEST"
 tail -n +"$LINE" "$0" | base64 -d | tar xzf - -C "$DEST"
 chmod +x "$DEST"/*.sh
-echo "[1/4] исходники распакованы в $DEST"
+echo "[1/2] исходники распакованы в $DEST"
 
-# --- cliclick -----------------------------------------------------------------
-if command -v cliclick >/dev/null 2>&1; then
-    echo "[2/4] cliclick уже стоит"
-elif command -v brew >/dev/null 2>&1; then
-    echo "[2/4] ставлю cliclick через brew..."
-    brew install cliclick || { echo "  brew install не удался, поставь вручную" >&2; }
-else
-    echo "[2/4] ВНИМАНИЕ: нет ни cliclick, ни brew."
-    echo "      Поставь Homebrew (brew.sh), затем: brew install cliclick"
+# --- Сборка -------------------------------------------------------------------
+if ! command -v swiftc >/dev/null 2>&1; then
+    echo "" >&2
+    echo "Нет swiftc — нужны Xcode Command Line Tools:" >&2
+    echo "  xcode-select --install" >&2
+    echo "После установки запусти: $DEST/make-cert.sh && $DEST/build-app.sh" >&2
+    exit 1
 fi
 
-# --- Сборка приложения --------------------------------------------------------
-if [ -d "/Applications/iTerm.app" ] || [ -d "$HOME/Applications/iTerm.app" ]; then
-    :
-else
-    echo "      ВНИМАНИЕ: iTerm не найден — иконка запустится, но окно не откроется."
-fi
+# Сертификат до сборки, иначе бандл уйдёт подписанным ad-hoc и разрешение в
+# Accessibility будет слетать при каждой пересборке — молча.
+"$DEST/make-cert.sh" >/dev/null || {
+    echo "[2/3] сертификат создать не удалось — соберу с ad-hoc подписью."
+    echo "      Разрешение Accessibility придётся переоформлять после каждой"
+    echo "      пересборки. Починить: $DEST/make-cert.sh"
+}
+echo "[2/3] подпись готова"
 
-"$DEST/build-jiggle-app.sh" >/dev/null
-echo "[3/4] приложение собрано: $APP"
+"$DEST/build-app.sh" >/dev/null
+echo "[3/3] приложение собрано: $APP"
 
-# --- Dock ---------------------------------------------------------------------
-if [ "${JIGGLE_SKIP_DOCK:-0}" = "1" ]; then
-    echo "[4/4] Dock пропущен (JIGGLE_SKIP_DOCK=1)"
-elif defaults read com.apple.dock persistent-apps 2>/dev/null | grep -q "Jiggle.app"; then
-    echo "[4/4] иконка уже в Dock"
-else
-    defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>${APP}</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>"
-    killall Dock 2>/dev/null || true
-    echo "[4/4] иконка добавлена в Dock"
-fi
+cat <<MANUAL
 
-cat <<'MANUAL'
+Готово. Запустить:
 
-Осталось два разрешения, оба одноразовые и только руками:
+  open "$APP"
 
-  1. System Settings → Privacy & Security → Accessibility
-     включить галочку для iTerm (без этого курсор двигаться не будет)
+Иконка появится в строке меню (в доке её нет — это menu bar приложение).
 
-  2. при первом клике по иконке всплывёт
-     «Jiggle» хочет управлять «iTerm» → OK
+При первом запуске macOS попросит Accessibility: без него курсор двигаться не
+будет. Разрешать надо в диалоге самого приложения — добавление через «+» в
+System Settings выглядит тем же самым, но такая запись теряется при
+перезапуске приложения.
+
+Чтобы стартовало при входе в систему:
+  System Settings → General → Login Items → добавить Jiggle.
+
+Лог, если что-то не так: ~/Library/Logs/jiggle.log
+
+Консольная версия (нужен Homebrew и cliclick):
+  brew install cliclick
+  $DEST/jiggle.sh
 
 MANUAL
-
-echo "Исходники:  $DEST"
-echo "Приложение: $APP"
-echo "Проверить без иконки:  $DEST/jiggle.sh"
-echo ""
 exit 0
 
 __PAYLOAD_BELOW__

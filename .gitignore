@@ -6,3 +6,6 @@ jiggle-installer.sh
 .DS_Store
 *.iconset/
 *.icns
+
+# dmg для раздачи через Releases, в репозитории не нужен
+*.dmg
