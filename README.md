@@ -10,9 +10,10 @@ Two independent ways to run it, sharing nothing but the idea:
 - **`jiggle.sh`** — a shell script driving [`cliclick`](https://github.com/BlueM/cliclick).
   Nothing to build.
 
-Both build on your machine, so nothing arrives quarantined. For people who will
-not touch the code there is also a prebuilt, signed `.app` in a dmg (see
-Install) — one Gatekeeper step on first launch, nothing after.
+Neither arrives quarantined: the app compiles on your machine, the script is
+just a script. For people who will not touch the code there is also a prebuilt,
+signed `.app` in a dmg (see Install) — one Gatekeeper step on first launch,
+nothing after.
 
 ## Why another one
 
@@ -71,20 +72,18 @@ Build the dmg yourself from a checkout with `./make-dmg.sh` (after
 
 ### One file that builds itself
 
-```sh
-./make-installer.sh          # produces jiggle-installer.sh
-```
-
-Copy that single file anywhere and run it:
+Grab `jiggle-installer.sh` from
+[Releases](https://github.com/gorokhovdenis/jiggle/releases) — it is not in the
+repository, being generated from it — and run:
 
 ```sh
 bash jiggle-installer.sh
 ```
 
-It asks where to unpack, creates `jiggle/` there, and builds
-`~/Applications/Jiggle.app`. The installer is a self-extracting text file —
-base64 payload, safe to send through mail or messengers. Non-interactive
-variants:
+It asks where to unpack, creates `jiggle/` there, mints the signing certificate
+and builds `~/Applications/Jiggle.app`. The installer is a self-extracting text
+file — base64 payload, safe to send through mail or messengers. Regenerate it
+from a checkout with `./make-installer.sh`. Non-interactive variants:
 
 ```sh
 JIGGLE_BASE=~/code bash jiggle-installer.sh    # creates ~/code/jiggle
