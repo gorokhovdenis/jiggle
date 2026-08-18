@@ -50,15 +50,14 @@ skipped.
 
 ## Install
 
-Three ways in. All of them end with a signed `Jiggle.app` whose Accessibility
-grant survives updates (the Signing section below explains why that needs
-saying at all).
+Two ways in. Both end with a signed `Jiggle.app` whose Accessibility grant
+survives updates (the Signing section below explains why that needs saying at
+all).
 
 | Path | Needs | Pick it when |
 |---|---|---|
 | **dmg** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | one quarantine click | you just want the app |
-| **installer** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | Xcode Command Line Tools | you also want `jiggle.sh`, or prefer building from source |
-| **clone** | Xcode Command Line Tools | you plan to change the code |
+| **build from source** | Xcode Command Line Tools | you also want `jiggle.sh`, or plan to change the code |
 
 ### Download the dmg
 
@@ -80,27 +79,7 @@ certificate, the Accessibility grant survives updates. No Xcode needed.
 Build the dmg yourself from a checkout with `./make-dmg.sh` (after
 `make-cert.sh` and `build-app.sh`).
 
-### One file that builds itself
-
-Grab `jiggle-installer.sh` from
-[Releases](https://github.com/gorokhovdenis/jiggle/releases) — it is not in the
-repository, being generated from it — and run:
-
-```sh
-bash jiggle-installer.sh
-```
-
-It asks where to unpack, creates `jiggle/` there, mints the signing certificate
-and builds `~/Applications/Jiggle.app`. The installer is a self-extracting text
-file — base64 payload, safe to send through mail or messengers. Regenerate it
-from a checkout with `./make-installer.sh`. Non-interactive variants:
-
-```sh
-JIGGLE_BASE=~/code bash jiggle-installer.sh    # creates ~/code/jiggle
-JIGGLE_DEST=~/tools/jig bash jiggle-installer.sh
-```
-
-### From a clone
+### Build from source
 
 ```sh
 git clone https://github.com/gorokhovdenis/jiggle.git
@@ -109,6 +88,16 @@ cd jiggle
 ./build-app.sh
 open ~/Applications/Jiggle.app
 ```
+
+git comes with the Command Line Tools, so there is nothing else to install.
+
+Prefer one file instead of a checkout — say, to hand the tool to someone over
+mail or a messenger? `jiggle-installer.sh` from
+[Releases](https://github.com/gorokhovdenis/jiggle/releases) is the repository
+packed into a single self-extracting script: it asks where to unpack, mints the
+certificate and builds the app in one go (`JIGGLE_BASE=~/code` or
+`JIGGLE_DEST=~/tools/jig` skip the question). Regenerate it from a checkout
+with `./make-installer.sh`.
 
 ## Accessibility permission
 
@@ -177,10 +166,10 @@ ad-hoc: the first launch costs a quarantine click regardless, but updates then
 keep the permission. Releases must therefore all be built on the same machine —
 the one holding that certificate's private key.
 
-The installer takes the other route: it builds on the target machine, where a
-locally built bundle never gets quarantined at all and `make-cert.sh` mints that
-machine's own certificate. No download step, no Gatekeeper, at the price of
-needing Xcode Command Line Tools.
+Building from source takes the other route: everything happens on the target
+machine, where a locally built bundle never gets quarantined at all and
+`make-cert.sh` mints that machine's own certificate. No download step, no
+Gatekeeper, at the price of needing Xcode Command Line Tools.
 
 Developer ID plus notarization is the only path with neither a build step nor a
 quarantine click. That is what Hammerspoon, AltTab, Rectangle, Ice and
