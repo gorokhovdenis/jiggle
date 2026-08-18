@@ -50,6 +50,16 @@ skipped.
 
 ## Install
 
+Three ways in. All of them end with a signed `Jiggle.app` whose Accessibility
+grant survives updates (the Signing section below explains why that needs
+saying at all).
+
+| Path | Needs | Pick it when |
+|---|---|---|
+| **dmg** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | one quarantine click | you just want the app |
+| **installer** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | Xcode Command Line Tools | you also want `jiggle.sh`, or prefer building from source |
+| **clone** | Xcode Command Line Tools | you plan to change the code |
+
 ### Download the dmg
 
 The friendliest way if you are not going to change the code. Grab
@@ -145,21 +155,15 @@ tccutil reset Accessibility com.gorokhovdenis.jiggle
 open ~/Applications/Jiggle.app
 ```
 
-## Installing on another Mac
-
-| Path | Effort there | Grant survives updates | Cost |
-|---|---|---|---|
-| **dmg** — prebuilt, certificate-signed | drag to Applications, clear quarantine once | yes | — |
-| **Installer** — builds on the machine | needs Xcode CLT | yes | — |
-| Developer ID + notarization | none | yes | $99/year |
+## Signing: Gatekeeper vs TCC
 
 Two things about signing are easy to conflate, and the difference is the whole
 story here.
 
 **Gatekeeper** validates the trust chain at launch. A self-signed certificate is
-trusted only on the machine that made it, so on any other Mac the downloaded app
-is rejected exactly as an ad-hoc one would be — hence the one-time quarantine
-step for the dmg. Notarization is the only way to remove it.
+trusted only on the machine that made it, so on any Mac but the build machine
+the downloaded app is rejected exactly as an ad-hoc one would be — hence the
+one-time quarantine step for the dmg. Notarization is the only way to remove it.
 
 **TCC** — the Accessibility grant — does *not* check trust. It stores the app's
 designated requirement and re-checks the binary against it. For a
