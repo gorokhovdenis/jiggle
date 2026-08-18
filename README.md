@@ -52,7 +52,10 @@ all).
 | Path | Needs | Pick it when |
 |---|---|---|
 | **dmg** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | one quarantine click | you just want the app |
-| **build from source** | Xcode Command Line Tools | you also want `jiggle.sh`, or plan to change the code |
+| **build from source** | Xcode Command Line Tools | you plan to change the code |
+
+`jiggle.sh` is not on this table because it needs no installing: it is one
+file — see [Command-line version](#command-line-version).
 
 ### Download the dmg
 
@@ -196,6 +199,10 @@ If the menu bar genuinely has no room, Jiggle falls back to a Dock icon:
 clicking starts and stops it, right-clicking opens the same menu.
 
 ## Command-line version
+
+Nothing to build here: `jiggle.sh` is a single file. Take it from a checkout —
+or skip the checkout entirely and download just it. The one dependency is
+`cliclick`:
 
 ```sh
 brew install cliclick
