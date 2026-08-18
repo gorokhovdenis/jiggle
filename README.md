@@ -12,11 +12,14 @@ Two independent ways to run it, sharing nothing but the idea:
 
 ## Why another one
 
-The established macOS jigglers — [Jiggler](https://github.com/bhaller/Jiggler),
-Amphetamine and the dozen or so menu-bar clones — are prebuilt applications. On
-recent macOS the older ones tend to fail before they do anything useful: the
-bundle is unsigned or its signature predates current requirements, so the GUI
-never comes up. Some alternatives are paid.
+Because the usual suggestions did not work out here: of the jigglers tried,
+several never got as far as showing a window, and one turned out to want paying.
+Why each of them failed was never established — diagnosing someone else's
+prebuilt binary is its own project.
+
+So this is the other approach: a few hundred lines you can read in one sitting,
+compiled on your own machine. If one of the established tools works for you,
+use it; this exists because they did not.
 
 ## What it actually does
 
@@ -39,9 +42,9 @@ Two things it deliberately does differently from most jigglers:
   pixel, and puts the cursor back where it was, so there is no drift over a long
   session.
 
-It also stays out of your way: if the cursor is not where it was left, or a key
-was pressed in the last minute, someone is using the Mac and that cycle is
-skipped.
+It also stays out of your way: if the cursor is not where it was left, someone
+is using the Mac and that cycle is skipped. The app additionally skips when a
+key was pressed in the last minute; the script watches the cursor only.
 
 ## Install
 
@@ -63,15 +66,20 @@ Grab `Jiggle-<version>.dmg` from
 [Releases](https://github.com/gorokhovdenis/jiggle/releases), open it, drag
 Jiggle into Applications.
 
-Because the dmg is not notarized (that costs $99/year), the first launch is
-blocked by Gatekeeper. Once: right-click Jiggle in Applications and choose
-**Open**, or run
+Because the dmg is not notarized (that costs $99/year), Gatekeeper blocks the
+first launch. Open it, dismiss the warning, then go to **System Settings →
+Privacy & Security**, scroll to *Security* and click **Open Anyway**. The
+Control-click → Open shortcut that older guides mention was removed in macOS
+Sequoia and no longer helps.
+
+From a terminal it is one command instead:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/Jiggle.app
 ```
 
-After that it launches normally. No Xcode needed.
+Either way it is once. After that it launches normally, and no Xcode is
+involved at any point.
 
 Build the dmg yourself from a checkout with `./make-dmg.sh` (after
 `make-cert.sh` and `build-app.sh`).
@@ -138,7 +146,7 @@ If a grant does break, reset it and relaunch:
 
 ```sh
 tccutil reset Accessibility com.gorokhovdenis.jiggle
-open ~/Applications/Jiggle.app
+open -b com.gorokhovdenis.jiggle
 ```
 
 ## Signing: Gatekeeper vs TCC
@@ -200,9 +208,15 @@ clicking starts and stops it, right-clicking opens the same menu.
 
 ## Command-line version
 
-Nothing to build here: `jiggle.sh` is a single file. Take it from a checkout —
-or skip the checkout entirely and download just it. The one dependency is
-`cliclick`:
+Nothing to build here: `jiggle.sh` is a single file — take it from a checkout,
+or skip the checkout entirely:
+
+```sh
+curl -O https://raw.githubusercontent.com/gorokhovdenis/jiggle/main/jiggle.sh
+chmod +x jiggle.sh
+```
+
+The one dependency is `cliclick`:
 
 ```sh
 brew install cliclick
@@ -243,7 +257,7 @@ Worth being straight about:
 ## Uninstall
 
 ```sh
-rm -rf ~/Applications/Jiggle.app
+rm -rf /Applications/Jiggle.app ~/Applications/Jiggle.app
 rm -f  ~/Library/Logs/jiggle.log
 defaults delete com.gorokhovdenis.jiggle
 tccutil reset Accessibility com.gorokhovdenis.jiggle
