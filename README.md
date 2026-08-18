@@ -46,19 +46,19 @@ It also stays out of your way: if the cursor is not where it was left, someone
 is using the Mac and that cycle is skipped. The app additionally skips when a
 key was pressed in the last minute; the script watches the cursor only.
 
-## Install
+## Installing the app
 
-Two ways in. Both end with a signed `Jiggle.app` whose Accessibility grant
-survives updates (the Signing section below explains why that needs saying at
-all).
+This section is about `Jiggle.app` only. The script is not installed at all —
+it is one file you download and run, see
+[Command-line version](#command-line-version).
+
+Two ways in. Both end with a signed bundle whose Accessibility grant survives
+updates (the Signing section below explains why that needs saying at all).
 
 | Path | Needs | Pick it when |
 |---|---|---|
 | **dmg** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | one quarantine click | you just want the app |
 | **build from source** | Xcode Command Line Tools | you plan to change the code |
-
-`jiggle.sh` is not on this table because it needs no installing: it is one
-file — see [Command-line version](#command-line-version).
 
 ### Download the dmg
 
