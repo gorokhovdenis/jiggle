@@ -5,10 +5,12 @@ system never reports you as idle.
 
 Two independent ways to run it, sharing nothing but the idea:
 
-- **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly. Ships
-  prebuilt in a dmg, or builds with nothing but Xcode Command Line Tools.
+- **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly.
+  [Download the dmg](https://github.com/gorokhovdenis/jiggle/releases) and drag
+  it to Applications, or [build it](#build-from-source) with nothing but Xcode
+  Command Line Tools.
 - **`jiggle.sh`** — a shell script driving [`cliclick`](https://github.com/BlueM/cliclick).
-  Nothing to build.
+  Nothing to build or install: [one `curl`](#command-line-version) and it runs.
 
 ## Why another one
 
