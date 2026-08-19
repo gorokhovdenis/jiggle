@@ -22,8 +22,9 @@ random move, a smooth glide, back to the exact pixel it started from.
 
 ## What it does
 
-A menu bar app in Swift, posting `CGEvent` directly. No dependencies at
-runtime, nothing but Xcode Command Line Tools to build it.
+A Swift app that lives in the menu bar and the Dock at once, posting `CGEvent`
+directly. No dependencies at runtime, nothing but Xcode Command Line Tools to
+build it.
 
 - **Moves on a randomized schedule.** A fixed heartbeat every 60 seconds is
   itself a machine-shaped pattern; the pause is random within a range you pick.
@@ -85,9 +86,14 @@ open /Applications/Jiggle.app
 
 ## Usage
 
-Click the menu bar icon to start and stop — no Dock icon, no window. The icon
-carries the state: a plain cursor when stopped, a cursor with motion lines when
-running, a warning triangle when events are going nowhere.
+The same menu is in two places — the menu bar and the Dock — because the menu
+bar alone proved unreliable (see below); the Dock hides nothing.
+
+- **Menu bar icon**: click for the menu. The icon carries the state — a plain
+  cursor when stopped, motion lines when running, a warning triangle when
+  events are going nowhere.
+- **Dock icon**: click to start and stop, right-click for the same menu. Shows
+  an `ON` badge while running.
 
 | Menu item | What it offers |
 |---|---|
