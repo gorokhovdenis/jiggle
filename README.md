@@ -82,14 +82,6 @@ cd jiggle
 open ~/Applications/Jiggle.app
 ```
 
-Prefer one file instead of a checkout — say, to hand the tool to someone over
-mail or a messenger? `jiggle-installer.sh` from
-[Releases](https://github.com/gorokhovdenis/jiggle/releases) is the repository
-packed into a single self-extracting script: it asks where to unpack, mints the
-certificate and builds the app in one go (`JIGGLE_BASE=~/code` or
-`JIGGLE_DEST=~/tools/jig` skip the question). Regenerate it from a checkout
-with `./make-installer.sh`.
-
 ## Usage
 
 Click the menu bar icon to start and stop — no Dock icon, no window. The icon
