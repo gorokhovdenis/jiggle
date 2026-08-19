@@ -14,7 +14,7 @@ OUT="${1:-$SRC/jiggle-installer.sh}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-FILES="jiggle.sh build-app.sh make-cert.sh jiggle-icon.png app"
+FILES="build-app.sh make-cert.sh jiggle-icon.png app"
 
 for f in $FILES; do
     [ -e "$SRC/$f" ] || { echo "нет: $SRC/$f" >&2; exit 1; }
@@ -118,9 +118,8 @@ System Settings выглядит тем же самым, но такая зап�
 
 Лог, если что-то не так: ~/Library/Logs/jiggle.log
 
-Консольная версия (нужен Homebrew и cliclick):
-  brew install cliclick
-  $DEST/jiggle.sh
+Консольная версия живёт отдельно:
+  https://github.com/gorokhovdenis/jiggle-cli
 
 MANUAL
 exit 0

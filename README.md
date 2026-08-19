@@ -16,32 +16,26 @@ random move, a smooth glide, back to the exact pixel it started from.
 ![Swift 5](https://img.shields.io/badge/Swift-5-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+> Want it without an app? [**jiggle-cli**](https://github.com/gorokhovdenis/jiggle-cli)
+> is the same idea as a single bash script — one `curl`, no build, no bundle.
+
 ## What it does
 
-Two independent versions, sharing nothing but the idea. Take either or both.
+A menu bar app in Swift, posting `CGEvent` directly. No dependencies at
+runtime, nothing but Xcode Command Line Tools to build it.
 
-- **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly.
-  [Download the dmg](https://github.com/gorokhovdenis/jiggle/releases/latest),
-  or [build it](#build-from-source) with nothing but Xcode Command Line Tools.
-- **`jiggle.sh`** — a shell script driving [`cliclick`](https://github.com/BlueM/cliclick).
-  Nothing to build or install: [one `curl`](#command-line-version) and it runs.
-
-Both of them:
-
-- **Move on a randomized schedule.** A fixed heartbeat every 60 seconds is
+- **Moves on a randomized schedule.** A fixed heartbeat every 60 seconds is
   itself a machine-shaped pattern; the pause is random within a range you pick.
-- **Glide, and return exactly.** Not a one-pixel teleport — a smooth arc out and
-  back to the starting pixel, so nothing drifts over a long session.
-- **Get out of your way.** If the cursor is not where it was left, someone is
-  using the Mac and that cycle is skipped. The app also skips when a key was
-  pressed in the last minute; the script watches the cursor only.
-- **Reset `HIDIdleTime`** — the counter the OS and idle-aware software read.
+- **Glides, and returns exactly.** Not a one-pixel teleport — a smooth arc out
+  and back to the starting pixel, so nothing drifts over a long session.
+- **Gets out of your way.** If the cursor is not where it was left, or a key was
+  pressed in the last minute, someone is using the Mac and that cycle is skipped.
+- **Resets `HIDIdleTime`** — the counter the OS and idle-aware software read.
   Measured, not assumed: `8749 ms` before a jiggle, `101 ms` after.
-
-The app additionally **verifies every move** by reading the cursor position
-afterwards, so "running" cannot quietly mean "nothing is happening" —
-[Accessibility permission](#accessibility-permission) explains why that failure
-mode is worth guarding against.
+- **Verifies every move** by reading the cursor position afterwards, so
+  "running" cannot quietly mean "nothing is happening" —
+  [Accessibility permission](#accessibility-permission) explains why that
+  failure mode is worth guarding against.
 
 ### Why another one
 
@@ -55,9 +49,6 @@ compiled on your own machine. If one of the established tools works for you,
 use it; this exists because they did not.
 
 ## Install
-
-This section is about `Jiggle.app`. The script is not installed at all — see
-[Command-line version](#command-line-version).
 
 ### Download
 
@@ -123,42 +114,6 @@ collapsed section, which works by moving icons off-screen. Expand it and
 
 If the menu bar genuinely has no room, Jiggle falls back to a Dock icon:
 clicking starts and stops it, right-clicking opens the same menu.
-
-## Command-line version
-
-Nothing to build here: `jiggle.sh` is a single file — take it from a checkout,
-or skip the checkout entirely:
-
-```sh
-curl -O https://raw.githubusercontent.com/gorokhovdenis/jiggle/main/jiggle.sh
-chmod +x jiggle.sh
-```
-
-The one dependency is `cliclick`:
-
-```sh
-brew install cliclick
-./jiggle.sh
-```
-
-Configured entirely through the environment:
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `JIGGLE_MIN` | 30 | minimum pause between jiggles, seconds |
-| `JIGGLE_MAX` | 90 | maximum pause, seconds |
-| `JIGGLE_DELTA` | 150 | maximum cursor displacement, pixels |
-| `JIGGLE_EASE` | 300 | glide smoothness; 0 is an instant jump, higher is slower and more human |
-| `JIGGLE_SMART` | 1 | skip a cycle if the mouse was moved by hand |
-
-```sh
-JIGGLE_MIN=5 JIGGLE_MAX=10 JIGGLE_DELTA=400 ./jiggle.sh   # frequent and sweeping
-JIGGLE_DELTA=4 JIGGLE_EASE=0 ./jiggle.sh                  # barely perceptible
-```
-
-It checks on startup that the cursor actually moves and says so instead of
-pretending to work. Note that the permission belongs to the terminal running
-the script, not to the script.
 
 ## Accessibility permission
 
@@ -243,8 +198,6 @@ Worth being straight about:
   If that is what you are up against, this tool will not help you.
 - **Permissions do not transfer between machines.** They are per-machine TCC
   state, granted once per Mac, by hand.
-- **`cliclick` is not bundled.** Homebrew installs the right build on the target
-  machine.
 
 ## Uninstall
 
