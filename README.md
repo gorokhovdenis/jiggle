@@ -9,7 +9,8 @@ were idle. This nudges the cursor now and then so that never happens — a small
 random move, a smooth glide, back to the exact pixel it started from.
 
 <p align="center">
-  <img src="docs/demo.png" width="400" alt="Jiggle menu">
+  <img src="docs/demo.png" height="330" alt="Jiggle in the menu bar">
+  <img src="docs/demo-dock.png" height="330" alt="The same menu from the Dock">
 </p>
 
 ![macOS 13+, Apple Silicon](https://img.shields.io/badge/macOS-13%2B%20·%20Apple%20Silicon-blue)
