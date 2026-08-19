@@ -23,7 +23,11 @@ command -v swiftc >/dev/null || {
 }
 
 echo "компилирую..."
-swiftc -O -swift-version 5 \
+# Явный deployment target обязателен: без него swiftc молча берёт версию
+# хост-системы, и бинарь, собранный на macOS 26, не запускается на более
+# старых — при том что Info.plist обещает 13.0. Только arm64: Intel
+# сознательно не поддерживаем (отмечено в README).
+swiftc -O -swift-version 5 -target arm64-apple-macos13.0 \
     "$SRC/app/Log.swift" "$SRC/app/Jiggler.swift" "$SRC/app/main.swift" \
     -o "$TMP/Jiggle"
 
@@ -52,7 +56,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 	<key>CFBundleShortVersionString</key>
 	<string>1.1</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>NSHumanReadableCopyright</key>

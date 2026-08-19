@@ -12,7 +12,7 @@ random move, a smooth glide, back to the exact pixel it started from.
   <img src="docs/demo.png" width="400" alt="Jiggle menu">
 </p>
 
-![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)
+![macOS 13+, Apple Silicon](https://img.shields.io/badge/macOS-13%2B%20·%20Apple%20Silicon-blue)
 ![Swift 5](https://img.shields.io/badge/Swift-5-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -193,6 +193,8 @@ Worth being straight about:
 - **This only affects the idle timer.** Software that tracks the foreground
   window, takes screenshots or logs keystrokes is unaffected by a moving cursor.
   If that is what you are up against, this tool will not help you.
+- **Apple Silicon only.** The binary is arm64; Intel Macs are deliberately not
+  supported.
 - **Permissions do not transfer between machines.** They are per-machine TCC
   state, granted once per Mac, by hand.
 
