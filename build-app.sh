@@ -10,7 +10,10 @@
 set -eu
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
-APP="${JIGGLE_APP_PATH:-$HOME/Applications/Jiggle.app}"
+# /Applications, а не ~/Applications: Finder в сайдбаре показывает только
+# общесистемную папку, и приложение в домашней выглядит «не установленным».
+# Плюс dmg кладёт именно туда — одна копия, одно место на всех машинах.
+APP="${JIGGLE_APP_PATH:-/Applications/Jiggle.app}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 

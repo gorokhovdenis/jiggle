@@ -77,9 +77,9 @@ later. git ships with the Command Line Tools, so there is nothing else.
 git clone https://github.com/gorokhovdenis/jiggle.git
 cd jiggle
 ./make-cert.sh      # once per machine, see Signing below
-./build-app.sh      # builds ~/Applications/Jiggle.app
+./build-app.sh      # builds /Applications/Jiggle.app
 ./make-dmg.sh       # optional: package it for another Mac
-open ~/Applications/Jiggle.app
+open /Applications/Jiggle.app
 ```
 
 ## Usage
