@@ -22,7 +22,7 @@
 set -eu
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
-APP="${JIGGLE_APP_PATH:-$HOME/Applications/Jiggle.app}"
+APP="${JIGGLE_APP_PATH:-/Applications/Jiggle.app}"
 
 [ -d "$APP" ] || {
     echo "Нет $APP — сначала собери: $SRC/build-app.sh" >&2
