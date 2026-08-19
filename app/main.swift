@@ -1,8 +1,9 @@
 import Cocoa
 
-// Menu bar приложение: иконки в доке нет (LSUIElement в Info.plist).
-// Если места в строке меню не нашлось, переключаемся в док — тогда то же
-// самое меню доступно по правому клику на иконке.
+// Приложение живёт сразу в двух местах: иконка в строке меню и иконка в доке,
+// с одним и тем же меню (правый клик по доку). Дублирование сознательное:
+// menu bar ненадёжен — Hidden Bar и родня прячут новые иконки, на маках с
+// вырезом непоместившееся macOS молча не рисует. Док не прячется никогда.
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
@@ -73,7 +74,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// чаще всего её туда уводит менеджер строки меню (Hidden Bar, Ice, Bartender),
     /// сворачивая в скрытую секцию; реже — нехватка места в самой строке.
     /// Кликнуть по ней в обоих случаях нельзя. Молча выглядеть работающим —
-    /// худший вариант, поэтому говорим прямо и уходим в док как запасной путь.
+    /// худший вариант, поэтому говорим прямо. Управление при этом не теряется:
+    /// иконка в доке есть всегда.
     private func verifyStatusItemIsReachable(attempt: Int = 0) {
         // Окно у кнопки появляется не мгновенно. Раньше здесь стоял guard с
         // молчаливым return — и проверка просто не отрабатывала, приложение
@@ -88,9 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let onScreen = NSScreen.screens.contains { $0.frame.intersects(window.frame) }
         guard !onScreen else { return }
-
-        NSApp.setActivationPolicy(.regular)   // появится иконка в доке
-        updateDockBadge()
+        Log.write("иконка в строке меню за пределами экрана: \(window.frame)")
 
         // Объясняем один раз: при каждом запуске это было бы назойливо, а
         // иконка в доке дальше говорит сама за себя.
@@ -102,15 +102,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.informativeText = """
             The icon exists but sits off-screen, so you cannot click it.
 
-            The usual cause is a menu bar manager — Hidden Bar, Ice or Bartender — \
-            which puts new icons in its collapsed section. Expand it, then \
-            Cmd-drag the Jiggle icon to the always-visible side of the separator.
+            The usual cause is a menu bar manager — Hidden Bar, Ice or Bartender. \
+            macOS inserts new icons at the LEFT end of the row, which is exactly \
+            the collapsed section of those tools, so fresh icons are born hidden. \
+            Expand it, then Cmd-drag the Jiggle icon to the right of the separator.
 
-            Less often the menu bar is simply out of room; freeing a slot in \
-            System Settings → Control Center helps there.
-
-            Either way Jiggle is in the Dock meanwhile: click the icon to start \
-            and stop it, right-click for settings.
+            The Dock icon works regardless: click to start and stop, right-click \
+            for settings.
             """
         alert.alertStyle = .informational
         alert.addButton(withTitle: "OK")
@@ -231,7 +229,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func refresh() {
         statusItem.button?.image = icon()
-        if NSApp.activationPolicy() == .regular { updateDockBadge() }
+        updateDockBadge()
     }
 
     /// В док-режиме бейдж — единственная обратная связь о состоянии.
@@ -302,5 +300,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
-app.setActivationPolicy(.accessory)
+
+// Обычное приложение, не accessory: иконка в доке всегда. Главное меню
+// минимальное — без него при активации из дока строка меню пустеет,
+// а Cmd-Q не работает.
+let mainMenu = NSMenu()
+let appMenuItem = NSMenuItem()
+mainMenu.addItem(appMenuItem)
+let appMenu = NSMenu()
+appMenu.addItem(NSMenuItem(title: "Quit Jiggle",
+                           action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+appMenuItem.submenu = appMenu
+app.mainMenu = mainMenu
+
 app.run()

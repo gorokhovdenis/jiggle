@@ -47,13 +47,11 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
-	<key>LSUIElement</key>
-	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>MIT</string>
 </dict>
@@ -101,7 +99,7 @@ touch "$APP"
 echo "готово: $APP"
 echo ""
 echo "Запуск:   open \"$APP\""
-echo "Иконка появится в строке меню, в доке её не будет."
+echo "Иконка появится и в строке меню, и в доке."
 echo ""
 echo "При первом запуске macOS попросит Accessibility — без него курсор"
 echo "двигаться не будет. Приложение спросит само и откроет нужную панель."
