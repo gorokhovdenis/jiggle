@@ -1,18 +1,49 @@
+<p align="center">
+  <img src="jiggle-icon.png" width="128" alt="jiggle icon">
+</p>
+
 # jiggle
 
-A mouse jiggler for macOS. Moves the cursor on a randomized schedule so the
-system never reports you as idle.
+Step away from the desk for ten minutes and something, somewhere, notes that you
+were idle. This nudges the cursor now and then so that never happens — a small
+random move, a smooth glide, back to the exact pixel it started from.
 
-Two independent ways to run it, sharing nothing but the idea:
+<p align="center">
+  <img src="docs/demo.png" width="400" alt="Jiggle menu">
+</p>
+
+![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue)
+![Swift 5](https://img.shields.io/badge/Swift-5-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+## What it does
+
+Two independent versions, sharing nothing but the idea. Take either or both.
 
 - **`Jiggle.app`** — a menu bar app in Swift, posting `CGEvent` directly.
-  [Download the dmg](https://github.com/gorokhovdenis/jiggle/releases) and drag
-  it to Applications, or [build it](#build-from-source) with nothing but Xcode
-  Command Line Tools.
+  [Download the dmg](https://github.com/gorokhovdenis/jiggle/releases/latest),
+  or [build it](#build-from-source) with nothing but Xcode Command Line Tools.
 - **`jiggle.sh`** — a shell script driving [`cliclick`](https://github.com/BlueM/cliclick).
   Nothing to build or install: [one `curl`](#command-line-version) and it runs.
 
-## Why another one
+Both of them:
+
+- **Move on a randomized schedule.** A fixed heartbeat every 60 seconds is
+  itself a machine-shaped pattern; the pause is random within a range you pick.
+- **Glide, and return exactly.** Not a one-pixel teleport — a smooth arc out and
+  back to the starting pixel, so nothing drifts over a long session.
+- **Get out of your way.** If the cursor is not where it was left, someone is
+  using the Mac and that cycle is skipped. The app also skips when a key was
+  pressed in the last minute; the script watches the cursor only.
+- **Reset `HIDIdleTime`** — the counter the OS and idle-aware software read.
+  Measured, not assumed: `8749 ms` before a jiggle, `101 ms` after.
+
+The app additionally **verifies every move** by reading the cursor position
+afterwards, so "running" cannot quietly mean "nothing is happening" —
+[Accessibility permission](#accessibility-permission) explains why that failure
+mode is worth guarding against.
+
+### Why another one
 
 Because the usual suggestions did not work out here: of the jigglers tried,
 several never got as far as showing a window, and one turned out to want paying.
@@ -23,80 +54,42 @@ So this is the other approach: a few hundred lines you can read in one sitting,
 compiled on your own machine. If one of the established tools works for you,
 use it; this exists because they did not.
 
-## What it actually does
+## Install
 
-Every 30–90 seconds (randomized) it moves the cursor a random distance,
-smoothly, then returns it to the exact pixel it started from. That resets
-`HIDIdleTime` — the same counter the OS and idle-aware software read.
-
-Verified rather than assumed:
-
-```
-idle before jiggle:  8749 ms
-idle after  jiggle:   101 ms
-```
-
-Two things it deliberately does differently from most jigglers:
-
-- **Randomized intervals.** A fixed heartbeat every 60 seconds is itself a
-  machine-shaped pattern.
-- **Smooth movement with exact return.** It glides instead of teleporting one
-  pixel, and puts the cursor back where it was, so there is no drift over a long
-  session.
-
-It also stays out of your way: if the cursor is not where it was left, someone
-is using the Mac and that cycle is skipped. The app additionally skips when a
-key was pressed in the last minute; the script watches the cursor only.
-
-## Installing the app
-
-This section is about `Jiggle.app` only. The script is not installed at all —
-it is one file you download and run, see
+This section is about `Jiggle.app`. The script is not installed at all — see
 [Command-line version](#command-line-version).
 
-Two ways in. Both end with a signed bundle whose Accessibility grant survives
-updates (the Signing section below explains why that needs saying at all).
+### Download
 
-| Path | Needs | Pick it when |
-|---|---|---|
-| **dmg** from [Releases](https://github.com/gorokhovdenis/jiggle/releases) | one quarantine click | you just want the app |
-| **build from source** | Xcode Command Line Tools | you plan to change the code |
+1. Download `Jiggle-<version>.dmg` from the
+   [latest release](https://github.com/gorokhovdenis/jiggle/releases/latest)
+2. Open the disk image, drag `Jiggle.app` into `Applications`
+3. Gatekeeper blocks the first launch, because the dmg is not notarized (that
+   costs $99/year). Open it, dismiss the warning, then go to **System Settings →
+   Privacy & Security**, scroll to *Security* and click **Open Anyway**. The
+   Control-click → Open shortcut that older guides mention was removed in macOS
+   Sequoia and no longer helps. From a terminal it is one command instead:
+   ```sh
+   xattr -dr com.apple.quarantine /Applications/Jiggle.app
+   ```
+4. Grant Accessibility when the app asks —
+   [why it matters](#accessibility-permission)
 
-### Download the dmg
-
-Grab `Jiggle-<version>.dmg` from
-[Releases](https://github.com/gorokhovdenis/jiggle/releases), open it, drag
-Jiggle into Applications.
-
-Because the dmg is not notarized (that costs $99/year), Gatekeeper blocks the
-first launch. Open it, dismiss the warning, then go to **System Settings →
-Privacy & Security**, scroll to *Security* and click **Open Anyway**. The
-Control-click → Open shortcut that older guides mention was removed in macOS
-Sequoia and no longer helps.
-
-From a terminal it is one command instead:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/Jiggle.app
-```
-
-Either way it is once. After that it launches normally, and no Xcode is
-involved at any point.
-
-Build the dmg yourself from a checkout with `./make-dmg.sh` (after
-`make-cert.sh` and `build-app.sh`).
+Step 3 happens once. No Xcode is involved at any point.
 
 ### Build from source
+
+Requires Xcode Command Line Tools (`xcode-select --install`) and macOS 13 or
+later. git ships with the Command Line Tools, so there is nothing else.
 
 ```sh
 git clone https://github.com/gorokhovdenis/jiggle.git
 cd jiggle
-./make-cert.sh     # once per machine, see below
-./build-app.sh
+./make-cert.sh      # once per machine, see Signing below
+./build-app.sh      # builds ~/Applications/Jiggle.app
+./make-dmg.sh       # optional: package it for another Mac
 open ~/Applications/Jiggle.app
 ```
-
-git comes with the Command Line Tools, so there is nothing else to install.
 
 Prefer one file instead of a checkout — say, to hand the tool to someone over
 mail or a messenger? `jiggle-installer.sh` from
@@ -105,6 +98,67 @@ packed into a single self-extracting script: it asks where to unpack, mints the
 certificate and builds the app in one go (`JIGGLE_BASE=~/code` or
 `JIGGLE_DEST=~/tools/jig` skip the question). Regenerate it from a checkout
 with `./make-installer.sh`.
+
+## Usage
+
+Click the menu bar icon to start and stop — no Dock icon, no window. The icon
+carries the state: a plain cursor when stopped, a cursor with motion lines when
+running, a warning triangle when events are going nowhere.
+
+| Menu item | What it offers |
+|---|---|
+| **Interval** | 5–10 sec · 30–90 sec · 1–3 min · 3–8 min |
+| **Movement** | subtle 4 px · normal 150 px · wide 400 px |
+| **Pause while I'm using the Mac** | the skip described above |
+| **Accessibility settings…** | opens the right pane directly |
+| **Open log** | `~/Library/Logs/jiggle.log` |
+
+Autostart: System Settings → General → Login Items → add Jiggle.
+
+### If the icon is nowhere to be seen
+
+Most likely a menu bar manager — Hidden Bar, Ice, Bartender — has put it in its
+collapsed section, which works by moving icons off-screen. Expand it and
+⌘-drag the Jiggle icon to the always-visible side of the separator.
+
+If the menu bar genuinely has no room, Jiggle falls back to a Dock icon:
+clicking starts and stops it, right-clicking opens the same menu.
+
+## Command-line version
+
+Nothing to build here: `jiggle.sh` is a single file — take it from a checkout,
+or skip the checkout entirely:
+
+```sh
+curl -O https://raw.githubusercontent.com/gorokhovdenis/jiggle/main/jiggle.sh
+chmod +x jiggle.sh
+```
+
+The one dependency is `cliclick`:
+
+```sh
+brew install cliclick
+./jiggle.sh
+```
+
+Configured entirely through the environment:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `JIGGLE_MIN` | 30 | minimum pause between jiggles, seconds |
+| `JIGGLE_MAX` | 90 | maximum pause, seconds |
+| `JIGGLE_DELTA` | 150 | maximum cursor displacement, pixels |
+| `JIGGLE_EASE` | 300 | glide smoothness; 0 is an instant jump, higher is slower and more human |
+| `JIGGLE_SMART` | 1 | skip a cycle if the mouse was moved by hand |
+
+```sh
+JIGGLE_MIN=5 JIGGLE_MAX=10 JIGGLE_DELTA=400 ./jiggle.sh   # frequent and sweeping
+JIGGLE_DELTA=4 JIGGLE_EASE=0 ./jiggle.sh                  # barely perceptible
+```
+
+It checks on startup that the cursor actually moves and says so instead of
+pretending to work. Note that the permission belongs to the terminal running
+the script, not to the script.
 
 ## Accessibility permission
 
@@ -180,70 +234,6 @@ Developer ID plus notarization is the only path with neither a build step nor a
 quarantine click. That is what Hammerspoon, AltTab, Rectangle, Ice and
 MonitorControl all do.
 
-## Menu bar app
-
-The icon lives in the menu bar; no Dock icon, no window.
-
-- click the icon → **Start** / **Stop**
-- **Interval** — 5–10 sec, 30–90 sec, 1–3 min, 3–8 min
-- **Movement** — subtle 4 px, normal 150 px, wide 400 px
-- **Pause while I'm using the Mac** — the skip described above
-- **Accessibility settings…** and **Open log**
-
-The icon carries the state: a plain cursor when stopped, a cursor with motion
-lines when running, a warning triangle when events are going nowhere. Every move
-is confirmed by reading the cursor position afterwards, so "running" cannot
-quietly mean "nothing is happening".
-
-Log: `~/Library/Logs/jiggle.log`.
-
-Autostart: System Settings → General → Login Items → add Jiggle.
-
-### If the icon is nowhere to be seen
-
-Most likely a menu bar manager — Hidden Bar, Ice, Bartender — has put it in its
-collapsed section, which works by moving icons off-screen. Expand it and
-⌘-drag the Jiggle icon to the always-visible side of the separator.
-
-If the menu bar genuinely has no room, Jiggle falls back to a Dock icon:
-clicking starts and stops it, right-clicking opens the same menu.
-
-## Command-line version
-
-Nothing to build here: `jiggle.sh` is a single file — take it from a checkout,
-or skip the checkout entirely:
-
-```sh
-curl -O https://raw.githubusercontent.com/gorokhovdenis/jiggle/main/jiggle.sh
-chmod +x jiggle.sh
-```
-
-The one dependency is `cliclick`:
-
-```sh
-brew install cliclick
-./jiggle.sh
-```
-
-Configured entirely through the environment:
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `JIGGLE_MIN` | 30 | minimum pause between jiggles, seconds |
-| `JIGGLE_MAX` | 90 | maximum pause, seconds |
-| `JIGGLE_DELTA` | 150 | maximum cursor displacement, pixels |
-| `JIGGLE_EASE` | 300 | glide smoothness; 0 is an instant jump, higher is slower and more human |
-| `JIGGLE_SMART` | 1 | skip a cycle if the mouse was moved by hand |
-
-```sh
-JIGGLE_MIN=5 JIGGLE_MAX=10 JIGGLE_DELTA=400 ./jiggle.sh   # frequent and sweeping
-JIGGLE_DELTA=4 JIGGLE_EASE=0 ./jiggle.sh                  # barely perceptible
-```
-
-It checks on startup that the cursor actually moves and says so instead of
-pretending to work. Note that the permission belongs to the terminal running
-the script, not to the script.
-
 ## Limitations
 
 Worth being straight about:
@@ -270,4 +260,4 @@ The signing certificate, if you made one, is in Keychain Access under
 
 ## License
 
-MIT
+[MIT](LICENSE)
