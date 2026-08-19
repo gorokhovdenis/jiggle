@@ -98,14 +98,19 @@ running, a warning triangle when events are going nowhere.
 
 Autostart: System Settings → General → Login Items → add Jiggle.
 
-### If the icon is nowhere to be seen
+### If the menu bar icon is nowhere to be seen
 
-Most likely a menu bar manager — Hidden Bar, Ice, Bartender — has put it in its
-collapsed section, which works by moving icons off-screen. Expand it and
-⌘-drag the Jiggle icon to the always-visible side of the separator.
+Most likely a menu bar manager — Hidden Bar, Ice, Bartender. macOS inserts new
+icons at the *left* end of the row, which is exactly the collapsed section of
+those tools, so fresh icons are born hidden — and hiding works by moving them
+far off-screen, which is why the space to the left of the visible icons looks
+simply empty. Expand the manager and ⌘-drag the Jiggle icon to the right of its
+separator.
 
-If the menu bar genuinely has no room, Jiggle falls back to a Dock icon:
-clicking starts and stops it, right-clicking opens the same menu.
+On notched MacBooks the bar can also genuinely run out of room, in which case
+macOS silently drops icons that do not fit.
+
+Either way the Dock icon is unaffected — nothing is lost but convenience.
 
 ## Accessibility permission
 
