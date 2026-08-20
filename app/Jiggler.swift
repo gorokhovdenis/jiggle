@@ -38,16 +38,22 @@ final class Jiggler {
         guard !isRunning else { return }
         lastLeftAt = Self.cursor()
         isBlocked = false          // проверится заново на первом же ходе
+        jiggleCount = 0            // счётчик per-session, как и обещает лог
         scheduleNext()
-        Log.write("start: pause \(Int(settings.minPause))–\(Int(settings.maxPause)) s, "
+        // Дефис вместо типографского тире: единственная строка лога с
+        // настройками должна находиться ASCII-grep'ом.
+        Log.write("start: pause \(Int(settings.minPause))-\(Int(settings.maxPause)) s, "
                   + "move \(Int(settings.delta)) px, "
-                  + "pause while user is active: \(settings.smart ? "yes" : "no")")
+                  + "skip while user is active: \(settings.smart ? "yes" : "no")")
         onChange?()
     }
 
     func stop() {
         workItem?.cancel()
         workItem = nil
+        // Остановленное приложение не «заблокировано»: иначе ⚠️ и бейдж «!»
+        // висели бы навсегда и уводили диагностику в сторону прав.
+        isBlocked = false
         Log.write("stop, moves this session: \(jiggleCount)")
         onChange?()
     }
@@ -61,6 +67,11 @@ final class Jiggler {
         let item = DispatchWorkItem { [weak self] in
             guard let self, !(self.workItem?.isCancelled ?? true) else { return }
             self.tick()
+            // Повторная проверка обязательна: tick() идёт ~секунды (glide),
+            // и stop() в этот момент отменяет только запланированный item.
+            // Без неё завершившийся тик планировал следующий — и джигглер
+            // «воскресал» после стопа (поймано живьём при проверке v0.2).
+            guard !(self.workItem?.isCancelled ?? true) else { return }
             self.scheduleNext()
         }
         workItem = item
@@ -75,8 +86,7 @@ final class Jiggler {
             return
         }
 
-        let target = CGPoint(x: now.x + Double.random(in: -settings.delta...settings.delta),
-                             y: now.y + Double.random(in: -settings.delta...settings.delta))
+        let target = Self.verifiableTarget(from: now, delta: settings.delta)
 
         glide(from: now, to: target)
 
@@ -87,7 +97,7 @@ final class Jiggler {
         let reached = Self.cursor()
         let intended = hypot(target.x - now.x, target.y - now.y)
         let achieved = hypot(reached.x - now.x, reached.y - now.y)
-        let moved = intended < 2 || achieved > intended / 4
+        let moved = achieved > intended / 4
 
         glide(from: target, to: now)   // возвращаем ровно туда, где был
 
@@ -99,7 +109,7 @@ final class Jiggler {
             isBlocked = true
             Log.write("""
                 cursor did not move: intended \(Int(intended)) px, got \
-                \(Int(achieved)) px. Events go nowhere — no Accessibility \
+                \(Int(achieved)) px. Events go nowhere, likely no Accessibility \
                 permission (AXIsProcessTrusted = \(AXIsProcessTrusted())).
                 """)
         }
@@ -110,6 +120,34 @@ final class Jiggler {
             self?.lastJiggle = stamp
             self?.onChange?()
         }
+    }
+
+    /// Цель хода. Два требования, оба ради честной проверки результата:
+    /// не ближе 3 px — микро-ход неотличим от заблокированного курсора, и на
+    /// пресете Subtle (4 px) такие ходы ложно «восстанавливали» движение;
+    /// в границах дисплея с курсором — цель за краем система клампит, и
+    /// настоящий ход у края экрана выглядел бы как заблокированный.
+    private static func verifiableTarget(from now: CGPoint, delta: Double) -> CGPoint {
+        var display = CGMainDisplayID()
+        var count: UInt32 = 0
+        CGGetDisplaysWithPoint(now, 1, &display, &count)
+        let bounds = CGDisplayBounds(display).insetBy(dx: 2, dy: 2)
+
+        for _ in 0..<32 {
+            let candidate = CGPoint(x: now.x + .random(in: -delta...delta),
+                                    y: now.y + .random(in: -delta...delta))
+            if bounds.contains(candidate),
+               hypot(candidate.x - now.x, candidate.y - now.y) >= 3 {
+                return candidate
+            }
+        }
+
+        // Курсор зажат в самом углу — шаг привычного размера к центру дисплея.
+        let toCenter = CGPoint(x: bounds.midX - now.x, y: bounds.midY - now.y)
+        let distance = max(hypot(toCenter.x, toCenter.y), 1)
+        let step = max(3, min(delta, distance))
+        return CGPoint(x: now.x + toCenter.x / distance * step,
+                       y: now.y + toCenter.y / distance * step)
     }
 
     /// Курсор не там, где мы его оставили, — значит его двигали руками.

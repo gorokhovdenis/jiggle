@@ -15,8 +15,9 @@
 #
 # Чего dmg НЕ делает: сертификат самоподписанный и на чужой машине не
 # доверенный, поэтому Gatekeeper при первом запуске всё равно упрётся в
-# карантин. Получателю один раз: правый клик → Open, либо
-#   xattr -dr com.apple.quarantine /Applications/Jiggle.app
+# карантин. Получателю один раз: System Settings → Privacy & Security →
+# Open Anyway (правый клик → Open убран начиная с Sequoia), либо
+#   sudo xattr -dr com.apple.quarantine /Applications/Jiggle.app
 # Убрать эту возню целиком может только notarization ($99/год).
 
 set -eu

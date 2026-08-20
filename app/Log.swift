@@ -16,6 +16,10 @@ enum Log {
 
     private static let stamp: DateFormatter = {
         let f = DateFormatter()
+        // Без фиксированной локали dateFormat подчиняется календарю и цифрам
+        // пользователя (буддийский год, арабские цифры) — лог перестаёт быть
+        // сравнимым между машинами.
+        f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return f
     }()
