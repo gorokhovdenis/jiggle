@@ -39,16 +39,16 @@ final class Jiggler {
         lastLeftAt = Self.cursor()
         isBlocked = false          // проверится заново на первом же ходе
         scheduleNext()
-        Log.write("старт: пауза \(Int(settings.minPause))–\(Int(settings.maxPause)) с, "
-                  + "ход \(Int(settings.delta)) px, "
-                  + "пропуск при работе за маком: \(settings.smart ? "да" : "нет")")
+        Log.write("start: pause \(Int(settings.minPause))–\(Int(settings.maxPause)) s, "
+                  + "move \(Int(settings.delta)) px, "
+                  + "pause while user is active: \(settings.smart ? "yes" : "no")")
         onChange?()
     }
 
     func stop() {
         workItem?.cancel()
         workItem = nil
-        Log.write("стоп, шевелений за сеанс: \(jiggleCount)")
+        Log.write("stop, moves this session: \(jiggleCount)")
         onChange?()
     }
 
@@ -92,15 +92,15 @@ final class Jiggler {
         glide(from: target, to: now)   // возвращаем ровно туда, где был
 
         if moved {
-            if isBlocked { Log.write("движение восстановилось") }
+            if isBlocked { Log.write("cursor movement restored") }
             isBlocked = false
             jiggleCount += 1
         } else if !isBlocked {
             isBlocked = true
             Log.write("""
-                курсор не сдвинулся: задумано \(Int(intended)) px, вышло \
-                \(Int(achieved)) px. События уходят вникуда — нет прав \
-                Accessibility (AXIsProcessTrusted = \(AXIsProcessTrusted())).
+                cursor did not move: intended \(Int(intended)) px, got \
+                \(Int(achieved)) px. Events go nowhere — no Accessibility \
+                permission (AXIsProcessTrusted = \(AXIsProcessTrusted())).
                 """)
         }
 

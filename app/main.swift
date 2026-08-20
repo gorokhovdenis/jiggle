@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Путь к бандлу в логе — не для красоты: разрешение выдаётся конкретному
         // бандлу, и когда копий несколько, «приложение запущено, а прав нет»
         // объясняется именно этим. Выяснять это со стороны было долго.
-        Log.write("запуск: \(Bundle.main.bundlePath), AXIsProcessTrusted = \(trusted)")
+        Log.write("launch: \(Bundle.main.bundlePath), AXIsProcessTrusted = \(trusted)")
     }
 
     /// Анкер com.apple.preference.security?Privacy_Accessibility — формат до
@@ -90,7 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let onScreen = NSScreen.screens.contains { $0.frame.intersects(window.frame) }
         guard !onScreen else { return }
-        Log.write("иконка в строке меню за пределами экрана: \(window.frame)")
+        Log.write("menu bar icon is off screen: \(window.frame)")
 
         // Объясняем один раз: при каждом запуске это было бы назойливо, а
         // иконка в доке дальше говорит сама за себя.
