@@ -58,7 +58,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Путь к бандлу в логе — не для красоты: разрешение выдаётся конкретному
         // бандлу, и когда копий несколько, «приложение запущено, а прав нет»
         // объясняется именно этим. Выяснять это со стороны было долго.
-        Log.write("launch: \(Bundle.main.bundlePath), AXIsProcessTrusted = \(trusted)")
+        // Версия в логе — чтобы по нему было видно, какой именно бинарь
+        // запущен: копий с одинаковым путём бывает больше одной.
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        Log.write("launch: \(Bundle.main.bundlePath), version \(version) (\(build)), "
+                  + "AXIsProcessTrusted = \(trusted)")
     }
 
     /// Анкер com.apple.preference.security?Privacy_Accessibility — формат до
@@ -167,6 +173,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         log.target = self
         menu.addItem(log)
 
+        let about = NSMenuItem(title: "About Jiggle",
+                               action: #selector(showAbout), keyEquivalent: "")
+        about.target = self
+        menu.addItem(about)
+
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit Jiggle",
                                 action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -174,6 +185,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func openLog() {
         NSWorkspace.shared.open(URL(fileURLWithPath: Log.path))
+    }
+
+    /// Стандартная панель About: имя, иконка и версия берутся из Info.plist,
+    /// своего UI не нужно. Клик по меню статус-бара приложение не активирует,
+    /// без activate панель открылась бы под чужими окнами.
+    @objc private func showAbout() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(nil)
     }
 
     private func statusLine() -> String {
@@ -308,6 +327,10 @@ let mainMenu = NSMenu()
 let appMenuItem = NSMenuItem()
 mainMenu.addItem(appMenuItem)
 let appMenu = NSMenu()
+appMenu.addItem(NSMenuItem(title: "About Jiggle",
+                           action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+                           keyEquivalent: ""))
+appMenu.addItem(.separator())
 appMenu.addItem(NSMenuItem(title: "Quit Jiggle",
                            action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 appMenuItem.submenu = appMenu
